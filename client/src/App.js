@@ -1,12 +1,13 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
-import Welcome from "./components/Welcome";
+import Home from "./components/Home";
 import Products from "./components/Products";
 import Stock from "./components/Stock";
 import List from "./components/List";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProductForm from "./components/ProductForm";
+import EditProduct from "./components/EditProduct";
 
 function App() {
   return (
@@ -16,24 +17,24 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Login />} />
 
-          {/* Protected Welcome Layout */}
+          {/* Protected Home Layout */}
           <Route
-            path="/welcome"
+            path="/home"
             element={
               <ProtectedRoute>
-                <Welcome />
+                <Home />
               </ProtectedRoute>
             }
           >
-            {/* ✅ Nested Routes ที่แสดงใน <Outlet /> ของ Welcome */}
+            {/* ✅ Nested Routes ที่แสดงใน <Outlet /> ของ Home */}
             <Route path="products" element={<Products />} />
             <Route path="stock" element={<Stock />} />
             <Route path="list" element={<List />} />
           </Route>
 
-          {/* ProductForm ยังเป็น route หลักได้ ถ้าไม่ต้องแสดงใน Welcome */}
+          {/* ProductForm ยังเป็น route หลักได้ ถ้าไม่ต้องแสดงใน Home */}
           <Route path="/products/add" element={<ProductForm />} />
-          <Route path="/products/edit/:id" element={<ProductForm />} />
+          <Route path="/products/edit/:id" element={<EditProduct />} />
         </Routes>
       </div>
     </Router>

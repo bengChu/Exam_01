@@ -33,10 +33,12 @@ function Login() {
         console.log("response.data.dataobj.token = " + response.data.dataobj.token);
         localStorage.setItem("token", response.data.dataobj.token); // เก็บ token ใส่ใน localStorage
 
+        localStorage.setItem('username', username);
+
         // ตั้งค่า Axios default headers สำหรับคำขอต่อไป
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.dataobj.token}`;
 
-        navigate('/welcome', { state: { username } }); // ไปหน้าwelcomeหลัง login สำเร็จ โดยส่งusername ไป Welcome.js โดยผ่าน location.state
+        navigate('/home', { state: { username } }); // ไปหน้าhomeหลัง login สำเร็จ โดยส่งusername ไป Home.js โดยผ่าน location.state
       } else {
         setError(response.data.message || "Login failed");
       }

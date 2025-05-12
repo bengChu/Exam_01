@@ -17,6 +17,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+const productController = require('../Controllers/ProductController');
+
+const verifyToken = require('../middleware/verifyToken');
+
 // Add this new route
 router.post('/upload-image', upload.single('productImage'), (req, res) => {
   if (!req.file) {
@@ -30,5 +34,11 @@ router.post('/upload-image', upload.single('productImage'), (req, res) => {
     message: 'Image uploaded successfully'
   });
 });
+
+router.post('/getproductall', verifyToken, productController.GetAll);
+router.delete('/:id', productController.DeleteProduct);
+router.get('/:id', productController.GetById);
+router.put('/:id', productController.UpdateProduct);
+
 
 module.exports = router;

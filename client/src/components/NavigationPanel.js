@@ -1,31 +1,34 @@
 // client/src/components/NavigationPanel.js
 import { useNavigate } from 'react-router-dom';
 
-function NavigationPanel({ onLogout }) {
+function NavigationPanel({ onLogout, username }) {
   const navigate = useNavigate();
 
   return (
     <div className="nav-panel">
-      <h3>เมนูหลัก</h3>
+      <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
+        👤 ผู้ใช้: {username}
+      </div>
+      <h3>Main Menu</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         <li>
           <button className="nav-button" onClick={() => navigate('products')}>
-            ผลิตภัณฑ์
+            Product
           </button>
         </li>
         <li>
           <button className="nav-button" onClick={() => navigate('stock')}>
-            สต็อก
+            Stock
           </button>
         </li>
         <li>
           <button className="nav-button" onClick={() => navigate('list')}>
-            รายการ
+            List
           </button>
         </li>
         <li>
           <button className="nav-button logout-button" onClick={onLogout}>
-            ออกจากระบบ
+            Logout
           </button>
         </li>
       </ul>
