@@ -1,32 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import "./EditProduct.css";
+import "./EditProduct.css"; // ใช้ style ร่วมกับ Edit
 
-function EditProduct() {
-  const { id } = useParams();
+function AddProduct() {
   const navigate = useNavigate();
   const [product, setProduct] = useState({ Name: "", Price: "", ImageUrl: "" });
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await api.post(
-          `http://localhost:3001/api/product/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setProduct(response.data);
-      } catch (err) {
-        setError(err.response?.data?.message || "ไม่สามารถโหลดข้อมูลสินค้าได้");
-      }
-    };
-
-    fetchProduct();
-  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,13 +32,12 @@ function EditProduct() {
           },
         }
       );
-
       setProduct((prev) => ({
         ...prev,
         ImageUrl: response.data.imageUrl,
       }));
     } catch (err) {
-      setError("อัปโหลดรูปภาพไม่สำเร็จ");
+      setError("Image upload failed");
     }
   };
 
@@ -66,24 +45,20 @@ function EditProduct() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await api.put(`http://localhost:3001/api/product/${id}`, product, {
+      await api.post("/api/product", product, {
         headers: { Authorization: `Bearer ${token}` },
       });
       navigate("/home/products");
     } catch (err) {
-      setError(err.response?.data?.message || "บันทึกข้อมูลไม่สำเร็จ");
+      setError(err.response?.data?.message || "Save failed");
     }
   };
 
   return (
     <div className="edit-product-container">
-      <h2>Edit Product</h2>
+      <h2>Add Product</h2>
       {error && <div className="error">{error}</div>}
       <form onSubmit={handleSubmit} className="edit-product-form">
-        <label>
-          <b>Id:</b>
-          <input type="text" value={product.Id} readOnly />
-        </label>
         <label>
           <b>Name:</b>
           <input
@@ -119,9 +94,7 @@ function EditProduct() {
           />
         </label>
         <div className="form-actions">
-          <button type="submit" className="save-btn">
-            Save
-          </button>
+          <button type="submit" className="save-btn">Save</button>
           <button
             type="button"
             className="cancel-btn"
@@ -135,4 +108,5 @@ function EditProduct() {
   );
 }
 
-export default EditProduct;
+export default AddProduct;
+ 

@@ -6,8 +6,9 @@ import Products from "./components/Products";
 import Stock from "./components/Stock";
 import List from "./components/List";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ProductForm from "./components/ProductForm";
+// import ProductForm from "./components/ProductForm";
 import EditProduct from "./components/EditProduct";
+import AddProduct from "./components/AddProduct";
 
 function App() {
   return (
@@ -28,13 +29,14 @@ function App() {
           >
             {/* ✅ Nested Routes ที่แสดงใน <Outlet /> ของ Home */}
             <Route path="products" element={<Products />} />
+            <Route path="products/edit/:id" element={<EditProduct />} />
+            <Route path="products/add" element={<AddProduct />} />
             <Route path="stock" element={<Stock />} />
             <Route path="list" element={<List />} />
           </Route>
 
           {/* ProductForm ยังเป็น route หลักได้ ถ้าไม่ต้องแสดงใน Home */}
-          <Route path="/products/add" element={<ProductForm />} />
-          <Route path="/products/edit/:id" element={<EditProduct />} />
+          {/* <Route path="/products/add" element={<ProductForm />} /> */}
         </Routes>
       </div>
     </Router>

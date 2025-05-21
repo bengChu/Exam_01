@@ -22,7 +22,7 @@ const productController = require('../Controllers/ProductController');
 const verifyToken = require('../middleware/verifyToken');
 
 // Add this new route
-router.post('/upload-image', upload.single('productImage'), (req, res) => {
+router.post('/upload-image', verifyToken, upload.single('productImage'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No file uploaded' });
   }
@@ -36,8 +36,8 @@ router.post('/upload-image', upload.single('productImage'), (req, res) => {
 });
 
 router.post('/getproductall', verifyToken, productController.GetAll);
-router.delete('/:id', productController.DeleteProduct);
-router.get('/:id', productController.GetById);
+router.delete('/:id', verifyToken, productController.DeleteProduct);
+router.post('/:id', verifyToken, productController.GetById);
 router.put('/:id', productController.UpdateProduct);
 
 

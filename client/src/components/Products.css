@@ -24,7 +24,7 @@
   font-size: 1.25rem;
 }
 
-.edit-btn:hover { color: green; }
+.edit-btn:hover { color: blue; }
 .delete-btn:hover { color: red; }
 
 .product-image {
@@ -32,3 +32,23 @@
   height: 60px;
   object-fit: cover;
 }
+
+.custom-confirm-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+}
+
+.add-product-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.add-product-btn:hover {
+  background-color: #0056b3;
+}
+

@@ -1,42 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaEdit, FaTrash } from 'react-icons/fa';
-import api from '../utils/api';
-import './Products.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import api from "../utils/api";
+import "./Products.css";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
 
 function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await api.post('http://localhost:3001/api/product/getproductall', {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const token = localStorage.getItem("token");
+      const response = await api.post(
+        "http://localhost:3001/api/product/getproductall",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setProducts(response.data);
     } catch (err) {
-      setError(err.response?.data?.message || 'ดึงข้อมูลสินค้าไม่สำเร็จ');
+      setError(err.response?.data?.message || "ดึงข้อมูลสินค้าไม่สำเร็จ");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('คุณแน่ใจว่าต้องการลบสินค้านี้?')) {
-      try {
-        const token = localStorage.getItem('token');
-        await api.delete(`/api/product/${id}`, {
+  const handleOpenConfirm = (product) => {
+    setSelectedProduct(product);
+    setOpenConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await api.delete(
+        `http://localhost:3001/api/product/${selectedProduct.Id}`,
+        {
           headers: { Authorization: `Bearer ${token}` },
-        });
-        fetchProducts(); // โหลดข้อมูลใหม่หลังลบ
-      } catch (err) {
-        setError(err.response?.data?.message || 'ลบสินค้าไม่สำเร็จ');
-      }
+        }
+      );
+      setOpenConfirm(false);
+      setSelectedProduct(null);
+      fetchProducts();
+    } catch (err) {
+      setError(err.response?.data?.message || "ลบสินค้าไม่สำเร็จ");
     }
+  };
+
+  const handleCancelDelete = () => {
+    setOpenConfirm(false);
+    setSelectedProduct(null);
   };
 
   useEffect(() => {
@@ -51,47 +82,102 @@ function Products() {
       {loading ? (
         <div>loading...</div>
       ) : (
-        <table className="product-table">
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Name</th>
-              <th>Image</th>
-              <th>Price</th>
-              <th>Edit</th>
-              <th>Delete</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p.Id}>
-                <td>{p.Id}</td>
-                <td>{p.Name}</td>
-                <td>
-                  {p.ImageUrl ? (
-                    <img
-                      src={`http://localhost:3001${p.ImageUrl}`}
-                      alt={p.Name}
-                      className="product-image"
-                    />
-                  ) : 'no image'}
-                </td>
-                <td>{p.Price}</td>
-                <td>
-                  <button className="edit-btn" onClick={() => navigate(`/products/edit/${p.Id}`)}>
-                    <FaEdit />
-                  </button>
-                </td>
-                <td>
-                  <button className="delete-btn" onClick={() => handleDelete(p.Id)}>
-                    <FaTrash />
-                  </button>
-                </td>
+        <>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "10px",
+            }}
+          >
+            <button
+              className="add-product-btn"
+              onClick={() => navigate("/home/products/add")}
+            >
+              Add Product
+            </button>
+          </div>
+          <table className="product-table">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Image</th>
+                <th>Price</th>
+                <th>Edit</th>
+                <th>Delete</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products.map((p) => (
+                <tr key={p.Id}>
+                  <td>{p.Id}</td>
+                  <td>{p.Name}</td>
+                  <td>
+                    {p.ImageUrl ? (
+                      <img
+                        src={`http://localhost:3001${p.ImageUrl}`}
+                        alt={p.Name}
+                        className="product-image"
+                      />
+                    ) : (
+                      "no image"
+                    )}
+                  </td>
+                  <td>{p.Price}</td>
+                  <td>
+                    <button
+                      className="edit-btn"
+                      onClick={() => navigate(`/home/products/edit/${p.Id}`)}
+                    >
+                      <FaEdit />
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleOpenConfirm(p)}
+                    >
+                      <FaTrash />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
+
+      <Dialog
+        open={openConfirm}
+        onClose={handleCancelDelete}
+        aria-labelledby="confirm-dialog-title"
+      >
+        <DialogTitle id="confirm-dialog-title">ยืนยันการลบ</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?
+            <br />
+            {selectedProduct?.Id && (
+              <strong>
+                Id: {selectedProduct.Id} Name: {selectedProduct.Name}
+              </strong>
+            )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            ยกเลิก
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+          >
+            ลบ
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
