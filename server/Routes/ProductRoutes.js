@@ -38,7 +38,8 @@ router.post('/upload-image', verifyToken, upload.single('productImage'), (req, r
 router.post('/getproductall', verifyToken, productController.GetAll);
 router.delete('/:id', verifyToken, productController.DeleteProduct);
 router.post('/:id', verifyToken, productController.GetById);
-router.put('/:id', productController.UpdateProduct);
+router.put('/:id', verifyToken, productController.UpdateProduct);
+router.post('', verifyToken, productController.AddProduct);
 
 
 module.exports = router;

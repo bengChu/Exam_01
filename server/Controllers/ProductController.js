@@ -68,3 +68,37 @@ exports.UpdateProduct = (req, res) => {
 
   res.json({ message: 'อัปเดตสินค้าสำเร็จ', success: true });
 };
+
+exports.AddProduct = (req, res) => {
+
+   console.log("เข้ามาใน server Add Product แล้ว");
+  const db = req.app.get('db');
+  const { Name, Price, ImageUrl } = req.body;
+
+  if (!Name || !Price) {
+    return res.status(400).json({
+      message: "กรุณาระบุชื่อสินค้าและราคาสินค้า",
+      success: false,
+    });
+  }
+
+  // สร้าง Id ใหม่โดยใช้ลำดับต่อจากสินค้าเดิม
+  const newId = db.Product.length > 0
+    ? Math.max(...db.Product.map(p => p.Id)) + 1
+    : 1;
+
+  const newProduct = {
+    Id: newId,
+    Name,
+    Price,
+    ImageUrl: ImageUrl || null,
+  };
+
+  db.Product.push(newProduct);
+
+  res.status(201).json({
+    message: "เพิ่มสินค้าสำเร็จ",
+    success: true,
+    data: newProduct,
+  });
+};

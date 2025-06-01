@@ -45,7 +45,7 @@ function AddProduct() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await api.post("/api/product", product, {
+      await api.post("http://localhost:3001/api/product", product, {
         headers: { Authorization: `Bearer ${token}` },
       });
       navigate("/home/products");
