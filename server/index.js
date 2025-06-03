@@ -36,8 +36,13 @@ const db = {
     },
   ],
   Stock: [
+    //ความหมายคือ Id=pk, productนึงมีของเข้าออก(+/-) ลำดับตามId
+    //อย่างข้อมูลนี้ ProductId=1 มีstock=10-7+25=28ชิ้น, ProductId=2 มีstock=5+11=16ชิ้น
     { Id: 1, ProductId: 1, Amount: 10 },
-    { Id: 2, ProductId: 2, Amount: 5 },
+    { Id: 2, ProductId: 1, Amount: -7 },
+    { Id: 3, ProductId: 2, Amount: 5 },
+    { Id: 4, ProductId: 1, Amount: 25 },
+    { Id: 5, ProductId: 2, Amount: 11 },
   ],
   User: [
     { Id: "beng01", 

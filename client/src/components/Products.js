@@ -19,8 +19,9 @@ function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [sortConfig, setSortConfig] = useState({ key: "Id", direction: "asc" });
 
+  const navigate = useNavigate();
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -70,6 +71,33 @@ function Products() {
     setSelectedProduct(null);
   };
 
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  // const getSortIndicator = (key) => {
+  //   if (sortConfig.key !== key) return "";
+  //   return sortConfig.direction === "asc" ? " ↑" : " ↓";
+  // };
+
+  const sortedProducts = [...products].sort((a, b) => {
+    const aVal = a[sortConfig.key];
+    const bVal = b[sortConfig.key];
+
+    if (typeof aVal === "string" && typeof bVal === "string") {
+      return sortConfig.direction === "asc"
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    }
+
+    if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+    if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -100,16 +128,22 @@ function Products() {
           <table className="product-table">
             <thead>
               <tr>
-                <th>Id</th>
-                <th>Name</th>
+                <th onClick={() => handleSort("Id")}>
+                  Id
+                </th>
+                <th onClick={() => handleSort("Name")}>
+                  Product Name
+                </th>
                 <th>Image</th>
-                <th>Price</th>
+                <th onClick={() => handleSort("Price")}>
+                  Price
+                </th>
                 <th>Edit</th>
                 <th>Delete</th>
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
+              {sortedProducts.map((p) => (
                 <tr key={p.Id}>
                   <td>{p.Id}</td>
                   <td>{p.Name}</td>

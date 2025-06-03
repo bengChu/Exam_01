@@ -1,5 +1,5 @@
 // Controllers/StockController.js
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 
 class api_Response {
   constructor() {
@@ -12,15 +12,13 @@ class api_Response {
 
 exports.GetStockByProductId = (req, res) => {
   try {
-    // Get db from app settings
-    const db = req.app.get('db');
-    
-    // Now getting productId from request body
-    console.log("req.body = ", req.body);
+    const db = req.app.get("db");
     const { productId } = req.body;
-    
+
+    const response = new api_Response();
+
+    // ตรวจสอบ productId ว่าถูกต้อง
     if (!productId || isNaN(parseInt(productId))) {
-      const response = new api_Response();
       response.success = false;
       response.message = "Invalid product ID";
       return res.status(400).json(response);
@@ -28,30 +26,65 @@ exports.GetStockByProductId = (req, res) => {
 
     const numericProductId = parseInt(productId);
 
-    // Find product
-    const product = db.Product.find(p => p.Id === numericProductId);
+    // ค้นหาสินค้า
+    const product = db.Product.find((p) => p.Id === numericProductId);
     if (!product) {
-      const response = new api_Response();
       response.success = false;
       response.message = "Product not found";
       return res.status(404).json(response);
     }
 
-    // Find stock (default to 0 if not found)
-    const stockEntry = db.Stock.find(s => s.ProductId === numericProductId);
-    const stockAmount = stockEntry ? stockEntry.Amount : 0;
+    const stockAmount = db.Stock
+      .filter(s => s.ProductId === numericProductId)
+      .reduce((sum, entry) => sum + entry.Amount, 0);
 
-    // Prepare response
-    const response = new api_Response();
+    // เตรียม response
     response.dataobj = {
       productdetail: {
         Id: product.Id,
         Name: product.Name,
         ImageUrl: product.ImageUrl,
-        Price: product.Price
+        Price: product.Price,
       },
-      stock: stockAmount
+      stock: stockAmount,
     };
+
+    response.message = "ดึงข้อมูลสินค้าพร้อมจำนวนคงเหลือสำเร็จ";
+
+    return res.status(200).json({
+      requestID: response.request_id,
+      success: response.success,
+      message: response.message,
+      data: response.dataobj,
+    });
+  } catch (error) {
+    console.error("Error in GetStockByProductId:", error);
+    const response = new api_Response();
+    response.success = false;
+    response.message = "Internal server error";
+    return res.status(500).json(response);
+  }
+};
+
+exports.GetStockAll = (req, res) => {
+  try {
+    const db = req.app.get('db');
+    const response = new api_Response();
+
+    // join Stock กับ Product เพื่อเพิ่ม Product.Name
+    const stockWithProductName = db.Stock.map((stock) => {
+      const product = db.Product.find(p => p.Id === stock.ProductId);
+      return {
+        ...stock,
+        ProductName: product ? product.Name : "Unknown"
+      };
+    });
+
+    // sort ตาม Stock.Id
+    stockWithProductName.sort((a, b) => a.Id - b.Id);
+
+    response.dataobj = stockWithProductName;
+    response.message = "ดึงรายการ stock ทั้งหมดสำเร็จ";
 
     return res.status(200).json({
       requestID: response.request_id,
@@ -59,12 +92,13 @@ exports.GetStockByProductId = (req, res) => {
       message: response.message,
       data: response.dataobj
     });
-
   } catch (error) {
-    console.error("Error in GetStockByProductId:", error);
+    console.error("Error in GetStockAll:", error);
     const response = new api_Response();
     response.success = false;
     response.message = "Internal server error";
+    response.dataobj = error.toString();
+
     return res.status(500).json(response);
   }
 };

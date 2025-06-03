@@ -7,7 +7,7 @@ function NavigationPanel({ onLogout, username }) {
   return (
     <div className="nav-panel">
       <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
-        👤 ผู้ใช้: {username}
+        👤 User: {username}
       </div>
       <h3>Main Menu</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
