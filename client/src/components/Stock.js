@@ -2,38 +2,46 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import "./Products.css"; // ใช้ style เดียวกับหน้า Products
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
 
 function Stock() {
   const navigate = useNavigate();
   const [stockData, setStockData] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: "Id", direction: "asc" });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [selectedStock, setSelectedStock] = useState(null);
 
   useEffect(() => {
-    const fetchStockData = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        const response = await axios.post(
-          "http://localhost:3001/api/stock/getstockall",
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setStockData(response.data.data);
-      } catch (err) {
-        console.error("Error fetching stock data:", err);
-        setError(err.response?.data?.message || "ดึงข้อมูลสต็อกไม่สำเร็จ");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStockData();
+    fetchStock();
   }, []);
+
+  const fetchStock = () => {
+    const token = localStorage.getItem("token");
+    setLoading(true);
+
+    axios
+      .post(
+        "http://localhost:3001/api/stock/getstockall",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        setStockData(res.data.data);
+      })
+      .catch((err) => console.error("Error fetching stock data:", err))
+      .finally(() => setLoading(false));
+  };
 
   const sortedData = [...stockData].sort((a, b) => {
     const aVal = a[sortConfig.key];
@@ -50,14 +58,39 @@ function Stock() {
     }));
   };
 
+  const handleOpenConfirm = (stock) => {
+    setSelectedStock(stock);
+    setOpenConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `http://localhost:3001/api/stock/${selectedStock.Id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setOpenConfirm(false);
+      setSelectedStock(null);
+      fetchStock();
+    } catch (err) {
+      console.error("Error deleting stock:", err);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setOpenConfirm(false);
+    setSelectedStock(null);
+  };
+
   return (
     <div className="product-container">
       <h1>Stock Summary</h1>
 
-      {error && <div className="error">{error}</div>}
-
       {loading ? (
-        <div>loading...</div>
+        <div>Loading...</div>
       ) : (
         <>
           <div
@@ -78,9 +111,15 @@ function Stock() {
           <table className="product-table">
             <thead>
               <tr>
-                <th onClick={() => handleSort("Id")}>Id</th>
-                <th onClick={() => handleSort("ProductName")}>Product Name</th>
-                <th onClick={() => handleSort("Amount")}>Amount</th>
+                <th>Id</th>
+                <th onClick={() => handleSort("ProductName")}>
+                  Product Name{" "}
+                  {sortConfig.key === "ProductName" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </th>
+                <th onClick={() => handleSort("Amount")}>
+                  Amount{" "}
+                  {sortConfig.key === "Amount" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </th>
                 <th>Edit</th>
                 <th>Delete</th>
               </tr>
@@ -102,7 +141,7 @@ function Stock() {
                   <td>
                     <button
                       className="delete-btn"
-                      onClick={() => console.log("Delete", item.Id)}
+                      onClick={() => handleOpenConfirm(item)}
                     >
                       <FaTrash />
                     </button>
@@ -113,6 +152,27 @@ function Stock() {
           </table>
         </>
       )}
+
+      <Dialog open={openConfirm} onClose={handleCancelDelete}>
+        <DialogTitle>ยืนยันการลบ</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            คุณต้องการลบสต็อกรายการนี้หรือไม่?
+            <br />
+            {selectedStock && (
+              <strong>
+                Id: {selectedStock.Id}, Product Name: {selectedStock.ProductName}
+              </strong>
+            )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete}>ยกเลิก</Button>
+          <Button onClick={handleConfirmDelete} variant="contained" color="error">
+            ลบ
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

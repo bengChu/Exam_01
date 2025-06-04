@@ -102,3 +102,65 @@ exports.GetStockAll = (req, res) => {
     return res.status(500).json(response);
   }
 };
+
+exports.DeleteStock = (req, res) => {
+  const db = req.app.get('db');
+  const { id } = req.params;
+
+  const index = db.Stock.findIndex(p => p.Id === parseInt(id));
+  if (index === -1) {
+    return res.status(404).json({ message: 'ไม่พบสต็อก', success: false });
+  }
+
+  db.Stock.splice(index, 1); // ลบสต็อก
+  res.json({ message: 'ลบสต็อกสำเร็จ', success: true });
+};
+
+
+exports.UpdateStock = (req, res) => {
+  const db = req.app.get('db');
+  const { id } = req.params;
+  const { ProductId, Amount } = req.body;
+
+  const stock = db.Stock.find(p => p.Id === parseInt(id));
+  if (!stock) {
+    return res.status(404).json({ message: 'ไม่พบสต็อก', success: false });
+  }
+
+  stock.ProductId = ProductId || stock.ProductId;
+  stock.Amount = Amount || stock.Amount;
+
+  res.json({ message: 'อัปเดตสต็อกสำเร็จ', success: true });
+};
+
+exports.AddStock = (req, res) => {
+
+  const db = req.app.get('db');
+  const { ProductId, Amount } = req.body;
+
+  if (!ProductId || !Amount) {
+    return res.status(400).json({
+      message: "กรุณาระบุProductIdและAmount",
+      success: false,
+    });
+  }
+
+  // สร้าง Id ใหม่โดยใช้ลำดับต่อจากสินค้าเดิม
+  const newId = db.Stock.length > 0
+    ? Math.max(...db.Stock.map(p => p.Id)) + 1
+    : 1;
+
+  const newStock = {
+    Id: newId,
+    ProductId,
+    Amount
+  };
+
+  db.Stock.push(newStock);
+
+  res.status(201).json({
+    message: "เพิ่มstockสำเร็จ",
+    success: true,
+    data: newStock,
+  });
+};

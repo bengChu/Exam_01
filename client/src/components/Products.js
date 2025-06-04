@@ -132,7 +132,7 @@ function Products() {
                   Id
                 </th>
                 <th onClick={() => handleSort("Name")}>
-                  Product Name
+                  Name
                 </th>
                 <th>Image</th>
                 <th onClick={() => handleSort("Price")}>

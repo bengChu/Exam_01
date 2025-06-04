@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // import ProductForm from "./components/ProductForm";
 import EditProduct from "./components/EditProduct";
 import AddProduct from "./components/AddProduct";
+import StockForm from "./components/StockForm";
 
 function App() {
   return (
@@ -32,6 +33,9 @@ function App() {
             <Route path="products/edit/:id" element={<EditProduct />} />
             <Route path="products/add" element={<AddProduct />} />
             <Route path="stock" element={<Stock />} />
+            <Route path="stock/add" element={<StockForm />} />
+            <Route path="stock/edit/:id" element={<StockForm />} />
+
             <Route path="list" element={<List />} />
           </Route>
 
