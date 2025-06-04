@@ -34,9 +34,9 @@ exports.GetStockByProductId = (req, res) => {
       return res.status(404).json(response);
     }
 
-    const stockAmount = db.Stock
-      .filter(s => s.ProductId === numericProductId)
-      .reduce((sum, entry) => sum + entry.Amount, 0);
+    const stockAmount = db.Stock.filter(
+      (s) => s.ProductId === numericProductId
+    ).reduce((sum, entry) => sum + entry.Amount, 0);
 
     // เตรียม response
     response.dataobj = {
@@ -68,15 +68,15 @@ exports.GetStockByProductId = (req, res) => {
 
 exports.GetStockAll = (req, res) => {
   try {
-    const db = req.app.get('db');
+    const db = req.app.get("db");
     const response = new api_Response();
 
     // join Stock กับ Product เพื่อเพิ่ม Product.Name
     const stockWithProductName = db.Stock.map((stock) => {
-      const product = db.Product.find(p => p.Id === stock.ProductId);
+      const product = db.Product.find((p) => p.Id === stock.ProductId);
       return {
         ...stock,
-        ProductName: product ? product.Name : "Unknown"
+        ProductName: product ? product.Name : "Unknown",
       };
     });
 
@@ -90,7 +90,7 @@ exports.GetStockAll = (req, res) => {
       requestID: response.request_id,
       success: response.success,
       message: response.message,
-      data: response.dataobj
+      data: response.dataobj,
     });
   } catch (error) {
     console.error("Error in GetStockAll:", error);
@@ -104,62 +104,69 @@ exports.GetStockAll = (req, res) => {
 };
 
 exports.DeleteStock = (req, res) => {
-  const db = req.app.get('db');
+  const db = req.app.get("db");
   const { id } = req.params;
 
-  const index = db.Stock.findIndex(p => p.Id === parseInt(id));
+  const index = db.Stock.findIndex((p) => p.Id === parseInt(id));
   if (index === -1) {
-    return res.status(404).json({ message: 'ไม่พบสต็อก', success: false });
+    return res.status(404).json({ message: "ไม่พบสต็อก", success: false });
   }
 
   db.Stock.splice(index, 1); // ลบสต็อก
-  res.json({ message: 'ลบสต็อกสำเร็จ', success: true });
+  res.json({ message: "ลบสต็อกสำเร็จ", success: true });
 };
 
-
 exports.UpdateStock = (req, res) => {
-  const db = req.app.get('db');
+  const db = req.app.get("db");
   const { id } = req.params;
   const { ProductId, Amount } = req.body;
 
-  const stock = db.Stock.find(p => p.Id === parseInt(id));
+  const stock = db.Stock.find((p) => p.Id === parseInt(id));
   if (!stock) {
-    return res.status(404).json({ message: 'ไม่พบสต็อก', success: false });
+    return res.status(404).json({ message: "ไม่พบสต็อก", success: false });
   }
 
   stock.ProductId = ProductId || stock.ProductId;
   stock.Amount = Amount || stock.Amount;
 
-  res.json({ message: 'อัปเดตสต็อกสำเร็จ', success: true });
+  res.json({ message: "อัปเดตสต็อกสำเร็จ", success: true });
 };
 
 exports.AddStock = (req, res) => {
+  const db = req.app.get("db");
+  let { ProductId, Amount } = req.body;
 
-  const db = req.app.get('db');
-  const { ProductId, Amount } = req.body;
-
-  if (!ProductId || !Amount) {
+  if (ProductId === undefined || Amount === undefined) {
     return res.status(400).json({
-      message: "กรุณาระบุProductIdและAmount",
+      message: "กรุณาระบุ ProductId และ Amount",
       success: false,
     });
   }
 
-  // สร้าง Id ใหม่โดยใช้ลำดับต่อจากสินค้าเดิม
-  const newId = db.Stock.length > 0
-    ? Math.max(...db.Stock.map(p => p.Id)) + 1
-    : 1;
+  // แปลงเป็นตัวเลข (number)
+  ProductId = parseInt(ProductId);
+  Amount = parseFloat(Amount);
+
+  if (isNaN(ProductId) || isNaN(Amount)) {
+    return res.status(400).json({
+      message: "ProductId และ Amount ต้องเป็นตัวเลข",
+      success: false,
+    });
+  }
+
+  const newId =
+    db.Stock.length > 0 ? Math.max(...db.Stock.map((p) => p.Id)) + 1 : 1;
 
   const newStock = {
     Id: newId,
     ProductId,
-    Amount
+    Amount,
   };
 
   db.Stock.push(newStock);
 
   res.status(201).json({
-    message: "เพิ่มstockสำเร็จ",
+    message: "เพิ่ม stock สำเร็จ",
     success: true,
     data: newStock,
   });

@@ -8,8 +8,8 @@ function StockForm() {
   const isEdit = Boolean(id);
 
   const [formData, setFormData] = useState({
-    ProductId: "",
-    Amount: "",
+    ProductId: 0,
+    Amount: 0,
   });
 
   const [products, setProducts] = useState([]);
